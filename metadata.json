@@ -1,0 +1,5 @@
+{
+  "name": "LingoFriend",
+  "description": "An AI-powered language learning companion for English and Arabic practice with real-time feedback.",
+  "requestFramePermissions": ["camera", "microphone"]
+}
