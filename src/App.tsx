@@ -70,22 +70,12 @@ export default function App() {
               <h3 className="px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Practice Language</h3>
               <div className="grid grid-cols-1 gap-1">
                 <Button 
-                  variant={language === 'english' ? 'secondary' : 'ghost'} 
-                  className="justify-start gap-3 h-11 px-4 rounded-lg"
-                  onClick={() => setLanguage('english')}
+                  variant="secondary" 
+                  className="justify-start gap-3 h-11 px-4 rounded-lg cursor-default"
                 >
                   <span className="text-lg">🇺🇸</span>
                   English
-                  {language === 'english' && <Badge variant="outline" className="ml-auto bg-white">Active</Badge>}
-                </Button>
-                <Button 
-                  variant={language === 'arabic' ? 'secondary' : 'ghost'} 
-                  className="justify-start gap-3 h-11 px-4 rounded-lg"
-                  onClick={() => setLanguage('arabic')}
-                >
-                  <span className="text-lg">🇸🇦</span>
-                  Arabic
-                  {language === 'arabic' && <Badge variant="outline" className="ml-auto bg-white">Active</Badge>}
+                  <Badge variant="outline" className="ml-auto bg-white">Active</Badge>
                 </Button>
               </div>
             </div>

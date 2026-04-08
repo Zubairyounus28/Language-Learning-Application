@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, User, Bot, RefreshCw, Languages, Info, Mic, MicOff, Volume2 } from 'lucide-react';
+import { Send, User, Bot, RefreshCw, Languages, Info, Mic, MicOff, Volume2, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import ReactMarkdown from 'react-markdown';
 import { Button } from './ui/button';
@@ -25,6 +25,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ language, messages
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [showNext, setShowNext] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
 
@@ -102,6 +103,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ language, messages
         timestamp: Date.now(),
       };
       setMessages(prev => [...prev, aiMessage]);
+      setShowNext(true);
 
       // Get feedback for user message in background
       getFeedback(language, input).then(feedback => {
@@ -201,30 +203,52 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ language, messages
       </div>
 
       <div className="p-4 border-t bg-background/50 backdrop-blur-sm">
-        <div className="max-w-3xl mx-auto flex gap-2">
-          <Input
-            placeholder={`Type in ${language}...`}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            className="rounded-full px-6"
-          />
-          <Button 
-            variant="outline"
-            size="icon" 
-            className={cn("rounded-full shrink-0", isListening && "bg-red-500 text-white hover:bg-red-600")} 
-            onClick={toggleListening}
-          >
-            {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-          </Button>
-          <Button 
-            size="icon" 
-            className="rounded-full shrink-0" 
-            onClick={handleSend}
-            disabled={!input.trim() || isLoading}
-          >
-            <Send className="w-4 h-4" />
-          </Button>
+        <div className="max-w-3xl mx-auto flex flex-col gap-4">
+          <AnimatePresence>
+            {showNext && (
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex justify-center"
+              >
+                <Button 
+                  onClick={() => setShowNext(false)}
+                  className="rounded-full px-8 gap-2 shadow-lg"
+                >
+                  Next
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <div className="flex gap-2">
+            <Input
+              placeholder={`Type in ${language}...`}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && !showNext && handleSend()}
+              className="rounded-full px-6"
+              disabled={showNext || isLoading}
+            />
+            <Button 
+              variant="outline"
+              size="icon" 
+              className={cn("rounded-full shrink-0", isListening && "bg-red-500 text-white hover:bg-red-600")} 
+              onClick={toggleListening}
+              disabled={showNext || isLoading}
+            >
+              {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+            </Button>
+            <Button 
+              size="icon" 
+              className="rounded-full shrink-0" 
+              onClick={handleSend}
+              disabled={!input.trim() || isLoading || showNext}
+            >
+              <Send className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       </div>
     </Card>

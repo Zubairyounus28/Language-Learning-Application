@@ -1,6 +1,6 @@
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Camera, CameraOff, Mic, MicOff, PhoneOff, Bot, User, Sparkles } from 'lucide-react';
+import { Camera, CameraOff, Mic, MicOff, PhoneOff, Bot, User, Sparkles, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
@@ -22,6 +22,8 @@ export const VideoChat: React.FC<VideoChatProps> = ({ language, onFeedback, onNe
   const [isListening, setIsListening] = useState(false);
   const [isAiTalking, setIsAiTalking] = useState(false);
   const [transcript, setTranscript] = useState('');
+  const [aiSubtitle, setAiSubtitle] = useState('');
+  const [showNextButton, setShowNextButton] = useState(false);
   
   const userVideoRef = useRef<HTMLVideoElement>(null);
   const recognitionRef = useRef<any>(null);
@@ -98,9 +100,11 @@ export const VideoChat: React.FC<VideoChatProps> = ({ language, onFeedback, onNe
     
     try {
       setIsAiTalking(true);
-      // We don't have the full history here, so we'll just send the new message
-      // In a real app, we'd pass history down
+      setAiSubtitle('');
+      setShowNextButton(false);
+      
       const aiResponse = await chatWithAI(language, [], text);
+      setAiSubtitle(aiResponse);
       
       // Speak AI response
       speak(aiResponse);
@@ -122,10 +126,20 @@ export const VideoChat: React.FC<VideoChatProps> = ({ language, onFeedback, onNe
       utterance.lang = language === 'english' ? 'en-US' : 'ar-SA';
       
       utterance.onstart = () => setIsAiTalking(true);
-      utterance.onend = () => setIsAiTalking(false);
+      utterance.onend = () => {
+        setIsAiTalking(false);
+        setShowNextButton(true);
+      };
       
       window.speechSynthesis.speak(utterance);
     }
+  };
+
+  const handleNext = () => {
+    setShowNextButton(false);
+    setAiSubtitle('');
+    setTranscript('');
+    // Optionally trigger something else here
   };
 
   const toggleMic = () => {
@@ -189,20 +203,55 @@ export const VideoChat: React.FC<VideoChatProps> = ({ language, onFeedback, onNe
           </div>
         </motion.div>
 
-        {/* AI Status */}
-        <div className="absolute top-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
-          <Badge variant="outline" className="bg-slate-900/80 border-primary/50 text-primary px-4 py-1 backdrop-blur-md">
-            {isAiTalking ? "LingoFriend is speaking..." : "LingoFriend is listening..."}
-          </Badge>
-          {transcript && (
-            <motion.p 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-white/60 text-sm max-w-md text-center px-4"
-            >
-              "{transcript}"
-            </motion.p>
-          )}
+        {/* AI Status & Subtitles */}
+        <div className="absolute bottom-32 left-1/2 -translate-x-1/2 w-full max-w-2xl px-6 flex flex-col items-center gap-4 z-30">
+          <AnimatePresence mode="wait">
+            {aiSubtitle && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="bg-black/60 backdrop-blur-md border border-white/10 px-6 py-4 rounded-2xl shadow-2xl text-center"
+              >
+                <p className="text-white text-lg md:text-xl font-medium leading-relaxed">
+                  {aiSubtitle}
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <div className="flex flex-col items-center gap-2">
+            <Badge variant="outline" className="bg-slate-900/80 border-primary/50 text-primary px-4 py-1 backdrop-blur-md">
+              {isAiTalking ? "LingoFriend is speaking..." : (showNextButton ? "Waiting for you..." : "LingoFriend is listening...")}
+            </Badge>
+            {transcript && !aiSubtitle && (
+              <motion.p 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-white/60 text-sm max-w-md text-center px-4 italic"
+              >
+                "{transcript}"
+              </motion.p>
+            )}
+          </div>
+
+          <AnimatePresence>
+            {showNextButton && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="mt-4"
+              >
+                <Button 
+                  onClick={handleNext}
+                  className="rounded-full px-8 py-6 text-lg gap-2 shadow-[0_0_20px_rgba(var(--primary),0.4)]"
+                >
+                  Next
+                  <ChevronRight className="w-5 h-5" />
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
