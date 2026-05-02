@@ -5,7 +5,7 @@ import { motion } from 'motion/react';
 import { ChatInterface } from './components/ChatInterface';
 import { VideoChat } from './components/VideoChat';
 import { FeedbackPanel } from './components/FeedbackPanel';
-import { Language, Feedback, Message } from './types';
+import { PracticeLanguage, NativeLanguage, Feedback, Message } from './types';
 import { Button } from './components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { Badge } from './components/ui/badge';
@@ -13,7 +13,8 @@ import { Separator } from './components/ui/separator';
 import { TooltipProvider } from './components/ui/tooltip';
 
 export default function App() {
-  const [language, setLanguage] = useState<Language>('english');
+  const [practiceLanguage, setPracticeLanguage] = useState<PracticeLanguage>('english');
+  const [nativeLanguage, setNativeLanguage] = useState<NativeLanguage>('urdu');
   const [messages, setMessages] = useState<Message[]>([]);
   const [feedbacks, setFeedbacks] = useState<Record<string, Feedback>>({});
   const [lastUserMessage, setLastUserMessage] = useState<string | null>(null);
@@ -40,27 +41,50 @@ export default function App() {
 
   return (
     <TooltipProvider>
-      <div className="flex h-screen bg-[#fafafa] text-foreground font-sans overflow-hidden">
+      <div className="flex h-screen bg-background text-foreground font-sans overflow-hidden dark">
         {/* Sidebar */}
-        <aside className="w-72 border-r bg-white flex flex-col hidden md:flex">
+        <aside className="w-72 border-r bg-card flex flex-col hidden md:flex">
           <div className="p-6 flex items-center gap-3">
             <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
               <Languages className="text-primary-foreground w-6 h-6" />
             </div>
             <div>
-              <h1 className="font-bold text-lg tracking-tight">LingoFriend</h1>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">AI Language Tutor</p>
+              <h1 className="font-bold text-lg tracking-tight">LingoRewrite</h1>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">AI Style Expert</p>
             </div>
           </div>
 
-          <div className="flex-1 px-4 py-2 space-y-8">
+          <div className="flex-1 px-4 py-2 space-y-8 overflow-y-auto">
             <div className="space-y-3">
               <h3 className="px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Native Language</h3>
-              <div className="px-2">
-                <Badge variant="secondary" className="gap-2 px-3 py-1 rounded-full">
-                  <span className="text-sm">🇵🇰</span>
+              <div className="grid grid-cols-1 gap-1">
+                <Button 
+                  variant={nativeLanguage === 'urdu' ? 'secondary' : 'ghost'} 
+                  className="justify-start gap-3 h-11 px-4 rounded-lg"
+                  onClick={() => setNativeLanguage('urdu')}
+                >
+                  <span className="text-lg">🇵🇰</span>
                   Urdu
-                </Badge>
+                  {nativeLanguage === 'urdu' && <Badge variant="outline" className="ml-auto bg-background">Active</Badge>}
+                </Button>
+                <Button 
+                  variant={nativeLanguage === 'arabic' ? 'secondary' : 'ghost'} 
+                  className="justify-start gap-3 h-11 px-4 rounded-lg"
+                  onClick={() => setNativeLanguage('arabic')}
+                >
+                  <span className="text-lg">🇸🇦</span>
+                  Arabic
+                  {nativeLanguage === 'arabic' && <Badge variant="outline" className="ml-auto bg-background">Active</Badge>}
+                </Button>
+                <Button 
+                  variant={nativeLanguage === 'english' ? 'secondary' : 'ghost'} 
+                  className="justify-start gap-3 h-11 px-4 rounded-lg"
+                  onClick={() => setNativeLanguage('english')}
+                >
+                  <span className="text-lg">🇺🇸</span>
+                  English
+                  {nativeLanguage === 'english' && <Badge variant="outline" className="ml-auto bg-background">Active</Badge>}
+                </Button>
               </div>
             </div>
 
@@ -70,12 +94,22 @@ export default function App() {
               <h3 className="px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Practice Language</h3>
               <div className="grid grid-cols-1 gap-1">
                 <Button 
-                  variant="secondary" 
-                  className="justify-start gap-3 h-11 px-4 rounded-lg cursor-default"
+                  variant={practiceLanguage === 'english' ? 'secondary' : 'ghost'} 
+                  className="justify-start gap-3 h-11 px-4 rounded-lg"
+                  onClick={() => setPracticeLanguage('english')}
                 >
                   <span className="text-lg">🇺🇸</span>
                   English
-                  <Badge variant="outline" className="ml-auto bg-white">Active</Badge>
+                  {practiceLanguage === 'english' && <Badge variant="outline" className="ml-auto bg-white">Active</Badge>}
+                </Button>
+                <Button 
+                  variant={practiceLanguage === 'arabic' ? 'secondary' : 'ghost'} 
+                  className="justify-start gap-3 h-11 px-4 rounded-lg"
+                  onClick={() => setPracticeLanguage('arabic')}
+                >
+                  <span className="text-lg">🇸🇦</span>
+                  Arabic
+                  {practiceLanguage === 'arabic' && <Badge variant="outline" className="ml-auto bg-white">Active</Badge>}
                 </Button>
               </div>
             </div>
@@ -132,17 +166,17 @@ export default function App() {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 flex flex-col bg-white md:m-2 md:rounded-2xl md:border md:shadow-sm overflow-hidden">
+        <main className="flex-1 flex flex-col bg-background md:m-2 md:rounded-2xl md:border md:shadow-sm overflow-hidden">
           <header className="h-16 border-b flex items-center justify-between px-6 shrink-0">
             <div className="flex items-center gap-4">
               <div className="md:hidden w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                 <Languages className="text-primary-foreground w-5 h-5" />
               </div>
               <div>
-                <h2 className="font-semibold">Conversation Practice</h2>
+                <h2 className="font-semibold">Grammar & Style Expert</h2>
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                  <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">LingoFriend is online</span>
+                  <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Expert is online</span>
                 </div>
               </div>
             </div>
@@ -163,7 +197,7 @@ export default function App() {
                 onClick={clearChat}
               >
                 <RefreshCw className="w-4 h-4" />
-                Clear Chat
+                Clear Results
               </Button>
             </div>
           </header>
@@ -172,7 +206,8 @@ export default function App() {
             <div className="flex-1 flex flex-col min-w-0">
               {viewMode === 'chat' ? (
                 <ChatInterface 
-                  language={language} 
+                  practiceLanguage={practiceLanguage} 
+                  nativeLanguage={nativeLanguage}
                   messages={messages}
                   setMessages={setMessages}
                   onFeedback={(id, f) => {
@@ -182,7 +217,8 @@ export default function App() {
                 />
               ) : (
                 <VideoChat 
-                  language={language}
+                  practiceLanguage={practiceLanguage}
+                  nativeLanguage={nativeLanguage}
                   onFeedback={(id, f) => {
                     handleFeedback(id, f);
                   }}
@@ -193,12 +229,12 @@ export default function App() {
             </div>
 
             {/* Right Panel - Feedback */}
-            <aside className="w-80 border-l bg-[#fafafa] hidden lg:block">
+            <aside className="w-80 border-l bg-muted/50 hidden lg:block">
               <div className="h-full flex flex-col">
-                <div className="p-4 border-b bg-white">
+                <div className="p-4 border-b bg-card">
                   <h3 className="font-semibold flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-amber-500" />
-                    AI Insights
+                    Style Analysis
                   </h3>
                 </div>
                 <FeedbackPanel 

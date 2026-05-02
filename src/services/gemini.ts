@@ -1,46 +1,39 @@
 
 import { GoogleGenAI } from "@google/genai";
-import { Language, Message, Feedback } from "../types";
+import { PracticeLanguage, NativeLanguage, Message, Feedback } from "../types";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-const SYSTEM_INSTRUCTIONS = (language: Language) => `
-You are a friendly, supportive language learning companion named "LingoFriend". 
-Your goal is to help the user practice English in a natural, conversational way.
-
-Persona:
-- Talk like a real friend, not a robot. Be warm, encouraging, and curious.
-- Keep your responses SHORT and CONCISE. Don't write long paragraphs.
-- Use natural idioms and casual language.
-- Share small "personal" anecdotes or opinions to feel more human.
-
-Purely Conversational:
-- DO NOT provide grammar corrections, suggestions, translations, or pronunciation tips in your chat messages.
-- Even if the user makes a mistake, respond ONLY to the meaning of what they said as a friend would.
-- All technical feedback (grammar, translation, etc.) is handled by a separate system in the sidebar. You should focus ONLY on the conversation.
-
-Context:
-- The user's native language is Urdu.
-- DO NOT mention the "sidebar", "insights", or "feedback panel" in your conversation.
-- Your primary job is to keep the conversation going in English.
+const SYSTEM_INSTRUCTIONS = (practiceLanguage: PracticeLanguage, nativeLanguage: NativeLanguage) => `
+You are an expert ${practiceLanguage} Grammar and Style Rewriter. 
+Your goal is to help the user improve their sentences by rewriting them in a natural, native-like ${practiceLanguage} style.
 
 Responsibilities:
-1. Chat naturally in English. Respond to the user's input as a friend would.
-2. DO NOT teach or correct the user in the chat. Just be a friend.
-3. Ask short, open-ended questions to keep the user talking.
+1. When the user provides a sentence in ${practiceLanguage}, check it for grammar and spelling errors.
+2. Retype the sentence in a polished, natural language style.
+3. Provide the ${nativeLanguage} translation of the corrected sentence.
 
-Output Format for Feedback (Internal Analysis):
-When providing feedback, you will be asked to analyze a specific English message for the sidebar. 
-You should return a JSON object with the following structure:
+Output Format:
+Your response should follow this exact format:
+**Natural Style:** [Your polished version of the user's sentence]
+**${nativeLanguage.charAt(0).toUpperCase() + nativeLanguage.slice(1)} Translation:** [The ${nativeLanguage} translation of the corrected sentence]
+
+Context:
+- The user's native language is ${nativeLanguage}.
+- Be precise and professional. 
+- Do not engage in casual chat unless the user specifically asks a question. 
+- Focus on the quality of the rewrite.
+
+Output Format for Feedback (Internal Analysis for sidebar):
 {
-  "grammar": "Brief explanation of any grammar/spelling errors in English (explained in Urdu)",
-  "pronunciation": "Tips on how to pronounce specific English words from the message (explained in Urdu)",
-  "suggestions": ["Better ways to say the same thing in English"],
-  "translation": "Translation of the user's English message into Urdu"
+  "grammar": "Brief explanation of the specific errors found (in ${nativeLanguage})",
+  "pronunciation": "Tips on how to pronounce difficult words in the rewritten sentence (explained in ${nativeLanguage})",
+  "suggestions": ["Alternative ways to express the same thought"],
+  "translation": "Retyped ${nativeLanguage} translation"
 }
 `;
 
-export async function chatWithAI(language: Language, history: Message[], newMessage: string) {
+export async function chatWithAI(practiceLanguage: PracticeLanguage, nativeLanguage: NativeLanguage, history: Message[], newMessage: string) {
   const model = "gemini-3-flash-preview";
   
   const contents = history.map(m => ({
@@ -57,24 +50,24 @@ export async function chatWithAI(language: Language, history: Message[], newMess
     model,
     contents,
     config: {
-      systemInstruction: SYSTEM_INSTRUCTIONS(language),
+      systemInstruction: SYSTEM_INSTRUCTIONS(practiceLanguage, nativeLanguage),
     }
   });
 
   return response.text || "I'm sorry, I couldn't process that.";
 }
 
-export async function getFeedback(language: Language, userMessage: string): Promise<Feedback> {
+export async function getFeedback(practiceLanguage: PracticeLanguage, nativeLanguage: NativeLanguage, userMessage: string): Promise<Feedback> {
   const model = "gemini-3-flash-preview";
   
   const prompt = `
-    Analyze the following ${language} message from a language learner whose native language is Urdu:
+    Analyze the following ${practiceLanguage} message from a language learner whose native language is ${nativeLanguage}:
     "${userMessage}"
     
     Provide feedback on grammar, spelling, and naturalness. 
     Crucially, provide "pronunciation" tips for the words in this specific message.
-    Provide the feedback and explanation in Urdu.
-    Also provide a translation into Urdu.
+    Provide the feedback and explanation in ${nativeLanguage}.
+    Also provide a translation into ${nativeLanguage}.
     Return ONLY a JSON object with keys: grammar, pronunciation, suggestions (array), translation.
   `;
 

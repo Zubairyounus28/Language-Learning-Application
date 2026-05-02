@@ -1,5 +1,6 @@
 
-export type Language = 'english' | 'arabic';
+export type PracticeLanguage = 'english' | 'arabic';
+export type NativeLanguage = 'urdu' | 'arabic' | 'english';
 
 export interface Message {
   id: string;
@@ -17,7 +18,7 @@ export interface Feedback {
 
 export interface ChatSession {
   id: string;
-  language: Language;
+  language: PracticeLanguage;
   messages: Message[];
   feedback: Record<string, Feedback>; // messageId -> feedback
 }

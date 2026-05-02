@@ -5,18 +5,19 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { Badge } from './ui/badge';
-import { Language, Feedback } from '../types';
+import { PracticeLanguage, NativeLanguage, Feedback } from '../types';
 import { chatWithAI, getFeedback } from '../services/gemini';
 import { cn } from '../lib/utils';
 
 interface VideoChatProps {
-  language: Language;
+  practiceLanguage: PracticeLanguage;
+  nativeLanguage: NativeLanguage;
   onFeedback: (messageId: string, feedback: Feedback) => void;
   onNewUserMessage: (content: string, id: string) => void;
   onClose: () => void;
 }
 
-export const VideoChat: React.FC<VideoChatProps> = ({ language, onFeedback, onNewUserMessage, onClose }) => {
+export const VideoChat: React.FC<VideoChatProps> = ({ practiceLanguage, nativeLanguage, onFeedback, onNewUserMessage, onClose }) => {
   const [isCameraOn, setIsCameraOn] = useState(true);
   const [isMicOn, setIsMicOn] = useState(true);
   const [isListening, setIsListening] = useState(false);
@@ -59,7 +60,7 @@ export const VideoChat: React.FC<VideoChatProps> = ({ language, onFeedback, onNe
       recognitionRef.current = new SpeechRecognition();
       recognitionRef.current.continuous = true;
       recognitionRef.current.interimResults = true;
-      recognitionRef.current.lang = language === 'english' ? 'en-US' : 'ar-SA';
+      recognitionRef.current.lang = practiceLanguage === 'english' ? 'en-US' : 'ar-SA';
 
       recognitionRef.current.onresult = (event: any) => {
         let interimTranscript = '';
@@ -90,7 +91,7 @@ export const VideoChat: React.FC<VideoChatProps> = ({ language, onFeedback, onNe
         }
       };
     }
-  }, [language, isListening]);
+  }, [practiceLanguage, isListening]);
 
   const handleUserSpeech = async (text: string) => {
     if (!text.trim()) return;
@@ -103,14 +104,14 @@ export const VideoChat: React.FC<VideoChatProps> = ({ language, onFeedback, onNe
       setAiSubtitle('');
       setShowNextButton(false);
       
-      const aiResponse = await chatWithAI(language, [], text);
+      const aiResponse = await chatWithAI(practiceLanguage, nativeLanguage, [], text);
       setAiSubtitle(aiResponse);
       
       // Speak AI response
       speak(aiResponse);
       
       // Get feedback
-      getFeedback(language, text).then(f => onFeedback(messageId, f));
+      getFeedback(practiceLanguage, nativeLanguage, text).then(f => onFeedback(messageId, f));
       
     } catch (err) {
       console.error("AI Error:", err);
@@ -123,7 +124,7 @@ export const VideoChat: React.FC<VideoChatProps> = ({ language, onFeedback, onNe
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = language === 'english' ? 'en-US' : 'ar-SA';
+      utterance.lang = practiceLanguage === 'english' ? 'en-US' : 'ar-SA';
       
       utterance.onstart = () => setIsAiTalking(true);
       utterance.onend = () => {

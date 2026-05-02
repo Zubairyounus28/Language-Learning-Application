@@ -21,9 +21,9 @@ export const FeedbackPanel: React.FC<FeedbackPanelProps> = ({ feedback, lastMess
           <Sparkles className="w-6 h-6 text-muted-foreground" />
         </div>
         <div className="space-y-2">
-          <h3 className="font-medium">No feedback yet</h3>
+          <h3 className="font-medium">Type a sentence</h3>
           <p className="text-sm text-muted-foreground">
-            Start chatting to receive real-time grammar and pronunciation tips.
+            Get instant grammar checks, natural rewrites, and translations.
           </p>
         </div>
       </div>
